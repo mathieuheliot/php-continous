@@ -1,0 +1,116 @@
+stages:
+  - build
+  - test
+  - release
+  - deploy
+
+variables:
+  DOCKER_VERSION: 19.03.6
+
+.deploy: &deploy  
+  - echo "Deploying $IMAGE"
+  - ssh "$SERVER_USER@$SERVER_HOST" -p "$SERVER_PORT" "docker stop $CI_PROJECT_NAME-$CI_ENVIRONMENT_SLUG || true && docker rm $CI_PROJECT_NAME-$CI_ENVIRONMENT_SLUG || true"
+  - ssh "$SERVER_USER@$SERVER_HOST" -p "$SERVER_PORT" "docker login registry.gitlab.com -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD"
+  - ssh "$SERVER_USER@$SERVER_HOST" -p "$SERVER_PORT" "docker pull $IMAGE"
+  - ssh "$SERVER_USER@$SERVER_HOST" -p "$SERVER_PORT" "docker run -p $EXPOSE:8080 -d --name $CI_PROJECT_NAME-$CI_ENVIRONMENT_SLUG $IMAGE"
+
+.login: &login
+ - docker login registry.gitlab.com -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+
+# The "ssh" job will start an ssh-agent 
+# and load a private key from a gitlab secret variable
+# This is needed to work on remote server
+.ssh: &ssh
+    ##
+    ## Authenticate to remote server
+    ## https://gitlab.com/gitlab-examples/ssh-private-key/-/blob/master/.gitlab-ci.yml
+    ##
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$SSH_PRIVATE_KEY")
+    - mkdir -p ~/.ssh
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+
+Build:
+  stage: build
+  image: docker:$DOCKER_VERSION
+  services:
+    - docker:$DOCKER_VERSION-dind    
+  except:
+    - tags
+  before_script: *login
+  script:
+    ##
+    ## This will make sure the GitLab runner has the latest image and can leverage layer caching in order to speed up docker builds
+    ## https://docs.gitlab.com/ee/ci/docker/using_docker_build.html
+    ##
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE:latest . --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA  --tag $CI_REGISTRY_IMAGE:latest
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE:latest
+
+Test SSH:
+  stage: test
+  variables:
+    ## We do not need the source code here.
+    GIT_STRATEGY: none    
+    SSH_PRIVATE_KEY: $SERVER_STAGE_KEY
+  except:
+    - tags
+  before_script: *ssh
+  script:
+    - echo "Test SSH"
+    - ssh "$SERVER_STAGE_USER@$SERVER_STAGE_HOST" -p "$SERVER_STAGE_PORT" "docker -v" -v
+    - echo "SSH OK"
+
+Release:
+  stage: release
+  image: docker:$DOCKER_VERSION
+  services:
+    - docker:$DOCKER_VERSION-dind    
+  variables:
+    ## Again, we do not need the source code here. Just playing with Docker.
+    GIT_STRATEGY: none    
+  only:
+    - tags
+  before_script: *login
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+
+Deploy to staging:
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+    EXPOSE: $APP_STAGE_EXPOSE
+    IMAGE: $CI_REGISTRY_IMAGE:latest
+    SERVER_USER: $SERVER_STAGE_USER
+    SERVER_HOST: $SERVER_STAGE_HOST
+    SERVER_PORT: $SERVER_STAGE_PORT
+    SSH_PRIVATE_KEY: $SERVER_STAGE_KEY
+  only:
+    - master
+  environment:
+    name: stage
+    url: http://test.lab.mathieuheliot.com/php-continous/
+  before_script: *ssh
+  script: *deploy
+
+Deploy to production:
+  stage: deploy  
+  variables:
+    GIT_STRATEGY: none
+    EXPOSE: $APP_PROD_EXPOSE
+    IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+    SERVER_USER: $SERVER_PROD_USER
+    SERVER_HOST: $SERVER_PROD_HOST
+    SERVER_PORT: $SERVER_PROD_PORT
+    SSH_PRIVATE_KEY: $SERVER_PROD_KEY
+  only:
+    - tags
+  environment:
+    name: production
+    url: https://lab.mathieuheliot.com/php-continous/
+  before_script: *ssh
+  script: *deploy

@@ -17,12 +17,12 @@ Note for Windows users: source code must be in c:/Users/\<Nom>
 - docker-compose up -d
 - docker-compose exec app composer install
 
-## Usage
+## Usage (local environment)
 - docker-compose up -d
 - docker-compose exec app composer update
 - docker-compose down
 
-## Deployment
+## Deployment (prod environment)
 - docker build -t php-continous:latest .
 - docker run -p \<PORT>:80 -d --name php-continous php-continous:latest
 - docker rm --force php-continous
