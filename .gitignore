@@ -1,0 +1,25 @@
+# System files
+.DS_Store
+dist
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*
+
+# Log files
+*.log*
+
+# Dependency files
+vendor
+
+# Env files
+.env.local
+.env.*.local
+
+# Project directories and path
+.nuxt
