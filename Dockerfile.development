@@ -1,0 +1,12 @@
+FROM php:7.4-fpm AS Build
+
+RUN pecl install xdebug \
+    && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini
+
+# Build website
+WORKDIR /opt/application
+COPY . .
+COPY --from=composer:1.10 /usr/bin/composer /usr/bin/composer
+
+# Lauch PHP built-in with server
+CMD php -S 0.0.0.0:8080 -t src

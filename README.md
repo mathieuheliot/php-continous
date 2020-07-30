@@ -13,16 +13,34 @@ Check it out at :
 
 ## Installation
 Note for Windows users: source code must be in c:/Users/\<Nom>
-- docker-compose build app
-- docker-compose up -d
-- docker-compose exec app composer install
+- `docker-compose build app`
+- `docker-compose up -d`
+- `docker-compose exec app composer install`
 
 ## Usage (local environment)
-- docker-compose up -d
-- docker-compose exec app composer update
-- docker-compose down
+- `docker-compose exec app composer update`
+- `docker-compose exec app php -S 0.0.0.0:8080 -t src`
+- `docker-compose down`
+
+### Debug mode for Visual Studio Code
+Add to your IDE's launch.json file the following configuration:
+```
+{
+  "name": "Listen for XDebug",
+  "type": "php",
+  "request": "launch",
+  "port": 9000,
+  "log": true,
+  "pathMappings": {
+      "/opt/application/src": "${workspaceFolder}/src"
+  },
+  "ignore": [
+      "**/vendor/**/*.php"
+  ]
+}
+```
 
 ## Deployment (prod environment)
-- docker build -t php-continous:latest .
-- docker run -p \<PORT>:80 -d --name php-continous php-continous:latest
-- docker rm --force php-continous
+- `docker build -t php-continous:latest .`
+- `docker run -p <PORT>:80 -d --name php-continous php-continous:latest`
+- `docker rm --force php-continous`
