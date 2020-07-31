@@ -1,5 +1,11 @@
 FROM php:7.4-fpm AS Build
 
+# Install needed dependencies
+RUN apt-get update && apt-get install -y \
+    zip \
+    unzip \
+    git
+
 # Build website
 WORKDIR /opt/application
 COPY . .
