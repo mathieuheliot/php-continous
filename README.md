@@ -6,7 +6,8 @@
 </p>
 
 PHP Continous is a sample application to illustrate how to continous integrate and deploy a PHP application with Docker, Composer and GitLab CI/CD.
-This example supports multiple environment (staging and production).
+
+It also supports XDebug for debugging mode, and multiple environment (staging and production).
 Check it out at :
 - https://lab.mathieuheliot.com/php-continous/ (production)
 - http://test.lab.mathieuheliot.com/php-continous/ (staging)
@@ -17,7 +18,7 @@ Note for Windows users: source code must be in c:/Users/\<Nom>
 - `docker-compose up -d`
 - `docker-compose exec app composer install`
 
-## Usage (local environment)
+## Development (local environment)
 - `docker-compose exec app composer update`
 - `docker-compose exec app php -S 0.0.0.0:8080 -t src`
 - `docker-compose down`
@@ -40,7 +41,7 @@ Add to your IDE's launch.json file the following configuration:
 }
 ```
 
-## Deployment (prod environment)
+## Deployment (prod or remote environment)
 - `docker build -t php-continous:latest .`
 - `docker run -p <PORT>:80 -d --name php-continous php-continous:latest`
 - `docker rm --force php-continous`
