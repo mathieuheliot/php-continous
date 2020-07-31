@@ -19,8 +19,8 @@ Note for Windows users: source code must be in c:/Users/\<Nom>
 - `docker-compose exec app composer install`
 
 ## Development (local environment)
+- `docker-compose up -d`
 - `docker-compose exec app composer update`
-- `docker-compose exec app php -S 0.0.0.0:8080 -t src`
 - `docker-compose down`
 
 ### Debug mode for Visual Studio Code
