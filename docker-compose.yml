@@ -14,6 +14,4 @@ services:
       - 8080:8080
     volumes:
       - ./:/opt/application
-    # command:
-      # - php -S 0.0.0.0:8080  -t src
     restart: unless-stopped
