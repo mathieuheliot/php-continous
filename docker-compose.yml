@@ -7,7 +7,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.development
-    container_name: php-continous
+    container_name: php-continous-debug
     environment:
       XDEBUG_CONFIG: remote_host=host.docker.internal remote_port=9000 remote_enable=1 remote_autostart=1
     ports:
