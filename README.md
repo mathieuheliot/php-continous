@@ -23,9 +23,24 @@ Note for Windows users: source code must be in c:/Users/\<Nom>
 - `docker-compose exec app composer update`
 - `docker-compose down`
 
-### Debug mode for Visual Studio Code
-Add to your IDE's launch.json file the following configuration:
+### Tools for Visual Studio Code
+
+#### Autocompletion with PHP Intellisense
+Firstly, install the PHP Intellisense extension and get PHP binaries for Windows at https://windows.php.net.
+PHP >=7.4 needs also VCRuntime 15 ; you can download PHP 7.2 to keep it simple.
+
+In your `settings.json` (File > Preferences > Settings), add the following line:
+```json
+{
+  ...
+  "php.validate.executablePath": "C:\\Program Files\\Php\\php.exe"
+}
 ```
+
+#### Debug mode with PHP Debug
+Install first the PHP Debug extension.
+Add to your IDE's launch.json file the following configuration:
+```json
 {
   "name": "Listen for XDebug",
   "type": "php",
