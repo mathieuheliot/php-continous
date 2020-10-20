@@ -13,7 +13,6 @@ Check it out at :
 - http://test.lab.mathieuheliot.com/php-continous/ (staging)
 
 ## Installation
-Note for Windows users: source code must be in c:/Users/\<Nom>
 - `docker-compose build app`
 - `docker-compose up -d`
 - `docker-compose exec app composer install`
@@ -24,6 +23,7 @@ Note for Windows users: source code must be in c:/Users/\<Nom>
 - `docker-compose down`
 
 ### Tools for Visual Studio Code
+Note for Windows users: source code must be in c:/Users/\<Nom>
 
 #### Autocompletion with PHP Intellisense
 Firstly, install the PHP Intellisense extension and get PHP binaries for Windows at https://windows.php.net.
